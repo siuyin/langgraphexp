@@ -26,12 +26,40 @@ func main() {
 	}
 
 	respFunc := func(resp api.ChatResponse) error {
+		if len(resp.Message.ToolCalls) > 0 {
+			log.Printf("Role: %#v, %#v\n", resp.Message.Role, resp.Message.ToolCalls)
+			for _, toolCall := range resp.Message.ToolCalls {
+				if toolCall.Function.Name == "get_menu" {
+					msg := api.Message{Role: "tool", Content: get_menu()}
+					log.Printf("%#v\n", msg)
+					messages = append(messages, msg)
+				}
+			}
+			return nil
+		}
 		fmt.Print(resp.Message.Content)
 		return nil
 	}
 
 	fmt.Println(welcomeMessage)
 	for {
+		fmt.Printf("len: %d\n", len(messages))
+		for i, m := range messages {
+			fmt.Printf("%d: %s ", i, m.Role)
+		}
+		fmt.Println()
+		lastMsg := messages[len(messages)-1]
+		if lastMsg.Role == "tool" {
+			req := &api.ChatRequest{
+				Model:    dflt.EnvString("AI_MODEL", "gemma3:4b"),
+				Messages: messages,
+				Tools:    []api.Tool{getMenuTool},
+			}
+			send(client, req, respFunc)
+			//fmt.Printf("LastMsg %#v,\n ************ sent\n", lastMsg)
+
+		}
+
 		msg := getInput()
 		if strings.ToLower(msg) == "q" {
 			break
@@ -41,6 +69,7 @@ func main() {
 		req := &api.ChatRequest{
 			Model:    dflt.EnvString("AI_MODEL", "gemma3:4b"),
 			Messages: messages,
+			Tools:    []api.Tool{getMenuTool},
 		}
 		send(client, req, respFunc)
 	}
