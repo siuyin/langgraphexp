@@ -46,7 +46,8 @@ func chatStream(genCfg *genai.GenerateContentConfig) {
 		log.Fatal(err)
 	}
 
-	for result, err := range chat.SendMessageStream(ctx, genai.Part{Text: "Hi, my name is Siu Yin. I live in Bukit Timah, Singapore"}) {
+	//for result, err := range chat.SendMessageStream(ctx, genai.Part{Text: "Hi, my name is Siu Yin. I live in Bukit Timah, Singapore"}) {
+	for result, err := range chat.SendMessageStream(ctx, genai.Part{Text: "mocha please"}) {
 		if err != nil {
 			log.Fatal(err)
 		}
